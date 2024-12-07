@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Student Details</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .details-container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        .mentor-section {
+            margin-bottom: 30px;
+            background: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .mentor-name {
+            color: #2c3e50;
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #3498db;
+        }
+        .student-card {
+            background: #f8f9fa;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 15px;
+            transition: transform 0.2s;
+        }
+        .student-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .student-info {
+            margin: 5px 0;
+            line-height: 1.5;
+        }
+        .student-name {
+            color: #2c3e50;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+        .company-details-btn {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background-color 0.2s;
+        }
+        .company-details-btn:hover {
+            background-color: #2980b9;
+        }
+        .progress-bar {
+            background: #e9ecef;
+            border-radius: 4px;
+            height: 20px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+        .progress {
+            background: #3498db;
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+        .back-button {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            margin: 20px;
+            transition: background 0.3s;
+        }
+        .back-button:hover {
+            background: #2980b9;
+        }
+        .label {
+            font-weight: 600;
+            color: #34495e;
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-button">← Back to Home</a>
+    <div class="details-container">
+        <h1>All Student Details</h1>
+        <div id="student-details"></div>
+    </div>
+
+    <script>
+        async function loadStudentDetails() {
+            try {
+                const response = await fetch('details.json');
+                const data = await response.json();
+                const container = document.getElementById('student-details');
+
+                for (const mentor in data) {
+                    const mentorSection = document.createElement('div');
+                    mentorSection.className = 'mentor-section';
+
+                    const mentorName = document.createElement('h2');
+                    mentorName.className = 'mentor-name';
+                    mentorName.textContent = mentor;
+                    mentorSection.appendChild(mentorName);
+
+                    data[mentor].forEach(student => {
+                        const studentCard = document.createElement('div');
+                        studentCard.className = 'student-card';
+
+                        const studentName = document.createElement('div');
+                        studentName.className = 'student-info';
+                        studentName.innerHTML = `<span class="student-name">${student['Name Of Student'] || student['Name of Student']}</span>`;
+
+                        const company = document.createElement('div');
+                        company.className = 'student-info';
+                        company.innerHTML = `<span class="label">Company:</span> ${student['Company'] || student['Company Name']}`;
+
+                        const project = document.createElement('div');
+                        project.className = 'student-info';
+                        project.innerHTML = `<span class="label">Project:</span> ${student['Project Name'] || 'N/A'}`;
+
+                        const companyDetailsBtn = document.createElement('div');
+                        companyDetailsBtn.className = 'student-info';
+                        companyDetailsBtn.innerHTML = `<button class="company-details-btn" onclick="viewCompanyDetails('${student['Name Of Student'] || student['Name of Student']}', '${mentor}')">See Company Details</button>`;
+
+                        const progressContainer = document.createElement('div');
+                        progressContainer.className = 'student-info';
+                        
+                        // Convert decimal progress to percentage and handle missing values
+                        const marchProgress = (parseFloat(student['Completion Status March'] || student['Completion Status March '] || 0) * 100).toFixed(0);
+                        const aprilProgress = (parseFloat(student['Completion Status April'] || student['Completion Status April '] || 0) * 100).toFixed(0);
+                        const mayProgress = (parseFloat(student['Completion Status May'] || student['Completion Status May '] || 0) * 100).toFixed(0);
+                        
+                        progressContainer.innerHTML = `
+                            <div><span class="label">Progress March:</span></div>
+                            <div class="progress-bar">
+                                <div class="progress" style="width: ${marchProgress}%" title="${marchProgress}%"></div>
+                            </div>
+                            <div><span class="label">Progress April:</span></div>
+                            <div class="progress-bar">
+                                <div class="progress" style="width: ${aprilProgress}%" title="${aprilProgress}%"></div>
+                            </div>
+                            <div><span class="label">Progress May:</span></div>
+                            <div class="progress-bar">
+                                <div class="progress" style="width: ${mayProgress}%" title="${mayProgress}%"></div>
+                            </div>
+                        `;
+
+                        const remarks = document.createElement('div');
+                        remarks.className = 'student-info';
+                        remarks.innerHTML = `<span class="label">Remarks:</span> ${student['Remarks'] || 'N/A'}`;
+
+                        studentCard.appendChild(studentName);
+                        studentCard.appendChild(company);
+                        studentCard.appendChild(project);
+                        studentCard.appendChild(progressContainer);
+                        studentCard.appendChild(remarks);
+                        studentCard.appendChild(companyDetailsBtn);
+
+                        mentorSection.appendChild(studentCard);
+                    });
+
+                    container.appendChild(mentorSection);
+                }
+            } catch (error) {
+                console.error('Error loading student details:', error);
+                document.getElementById('student-details').innerHTML = 'Error loading student details. Please try again later.';
+            }
+        }
+
+        function viewCompanyDetails(studentName, mentor) {
+            window.location.href = `company_details.html?student=${encodeURIComponent(studentName)}&mentor=${encodeURIComponent(mentor)}`;
+        }
+
+        loadStudentDetails();
+    </script>
+</body>
+</html>
